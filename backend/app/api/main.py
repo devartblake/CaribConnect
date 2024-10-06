@@ -1,7 +1,7 @@
 from fastapi import APIRouter, FastAPI, HTTPException, Request
 from starlette.middleware.sessions import SessionMiddleware
 
-from app.api.routes import (
+from app.api.v1.endpoints import (
     graphql,
     items,
     login,

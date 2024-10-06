@@ -3,17 +3,18 @@ import sys
 
 import json_log_formatter  # For structured logging in JSON format
 import sentry_sdk
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI, HTTPException
 from fastapi.routing import APIRoute
+from fastapi.security import OAuth2PasswordRequestForm
 from starlette.middleware.cors import CORSMiddleware
 
 from app.api.main import api_router
 from app.core.config import settings
+from app.core.security import authenticate_user, create_access_token, decode_token
 
 
 def custom_generate_unique_id(route: APIRoute) -> str:
     return f"{route.tags[0]}-{route.name}"
-
 
 if settings.SENTRY_DSN and settings.ENVIRONMENT != "local":
     sentry_sdk.init(dsn=str(settings.SENTRY_DSN), enable_tracing=True)
@@ -55,7 +56,7 @@ formatter = json_log_formatter.JSONFormatter()
 json_handler = logging.StreamHandler(sys.stdout)
 json_handler.setFormatter(formatter)
 
-app_logger = logging.getLogger("fastapi_logger")
+app_logger = logging.getLogger(__name__)
 app_logger.addHandler(json_handler)
 app_logger.setLevel(logging.INFO)
 
@@ -72,5 +73,21 @@ async def log_requests(request, call_next):
 @app.get("/", tags=["/"])
 async def root():
     return {"message": "Logging with Elasticsearch, Kibana, and Filebeat"}
+
+@app.post("/token", tags=["token"])
+async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = authenticate_user(form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(status_code=400, detail="Invalid credentials")
+
+    token = create_access_token({"sub": user["username"]})
+    return {"access_token": token, "token_type": "bearer"}
+
+@app.get("/me", tags=["me"])
+async def read_users_me(token: str):
+    user = decode_token(token)
+    if user is None:
+        raise HTTPException(status_code=401, detail="Invalid token")
+    return {"user": user}
 
 app.include_router(api_router, prefix=settings.API_V1_STR)

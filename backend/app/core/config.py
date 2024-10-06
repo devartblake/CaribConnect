@@ -38,6 +38,12 @@ class Settings(BaseSettings):
     FRONTEND_HOST: str = "http://localhost:5173"
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
 
+    # OAuth2 credentials
+    OAUTH2_CLIENT_ID: str
+    OAUTH2_CLIENT_SECRET: str
+    OAUTH2_TOKEN_URL: str = "https://provider.com/oauth/token"
+    OAUTH2_AUTH_URL: str = "https://provider.com/oauth/authorize"
+
     #Timezones
     USE_TZ: bool = True
     TIME_ZONE:str = "UTC"

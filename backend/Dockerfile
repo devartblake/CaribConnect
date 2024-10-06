@@ -35,18 +35,6 @@ COPY ./pyproject.toml ./uv.lock ./alembic.ini /app/
 
 COPY ./app /app/app
 
-# Create the user inside the Dockerfile
-RUN useradd -ms /bin/bash celeryuser
-
-# Set permissions for the working directory
-RUN chown -R celeryuser /app
-
-# Switch to non-root user
-USER celeryuser
-
-# Then run Celery
-CMD ["celery", "-A", "app_name", "worker", "--loglevel=info"]
-
 # Sync the project
 # Ref: https://docs.astral.sh/uv/guides/integration/docker/#intermediate-layers
 RUN --mount=type=cache,target=/root/.cache/uv \

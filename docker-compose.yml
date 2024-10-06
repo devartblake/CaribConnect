@@ -202,6 +202,7 @@ services:
       # Enable redirection for HTTP and HTTPS
       - traefik.http.routers.${STACK_NAME?Variable not set}-backend-http.middlewares=https-redirect
       
+  # Celery worker services
   celery-worker:
     image: '${DOCKER_IMAGE_BACKEND?Variable not set}:${TAG-latest}'
     restart: always
@@ -238,11 +239,10 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD?Variable not set}
       - SENTRY_DSN=${SENTRY_DSN}
       - CELERY_BROKER_URL=amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbit-mq:5672/${RABBITMQ_VHOST}
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
-    command: celery -A app.workers.celery_worker worker --loglevel=info
-    user: celeryuser
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0    
     build:
       context: ./backend
+      dockerfile: celery_worker.dockerfile
 
   # Flower service
   flower:
