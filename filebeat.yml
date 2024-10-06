@@ -1,0 +1,12 @@
+filebeat.inputs:
+  - type: container
+    paths:
+      - /var/lib/docker/containers/*/*.log
+    processors:
+      - add_docker_metadata: ~
+
+output.elasticsearch:
+  hosts: ["http://localhost:9200"]
+  index: "fastapi-logs-%{+yyyy.MM.dd}"
+setup.kibana:
+  hosts: ["http://localhost:5601"]
