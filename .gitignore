@@ -7,3 +7,4 @@ node_modules/
 GeoIP.conf
 *.vsidx
 .vs/slnx.sqlite
+.env
